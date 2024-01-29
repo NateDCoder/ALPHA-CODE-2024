@@ -5,8 +5,8 @@
 package frc.robot.Subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.revrobotics.CANSparkFlex
-import com.revrobotics.RelativeEncoder;;
+import com.revrobotics.CANSparkFlex;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -19,7 +19,7 @@ import frc.robot.Constants;
 public class ShooterSubsytem extends SubsystemBase {
 
   CANSparkMax pivot = new CANSparkMax(Constants.PIVOT_MOTOR_ID, MotorType.kBrushless);
-  CANSparkFlex bottomShooter; = new CANSparkFlex(Constants.BOTTOM_SHOOTER_MOTOR_ID, MotorType.kBrushless);
+  CANSparkFlex bottomShooter = new CANSparkFlex(Constants.BOTTOM_SHOOTER_MOTOR_ID, MotorType.kBrushless);
   CANSparkFlex topShooter = new CANSparkFlex(Constants.TOP_SHOOTER_MOTOR_ID, MotorType.kBrushless);
   CANSparkMax Feed = new CANSparkMax(Constants.FEED_MOTOR_ID, MotorType.kBrushless);
   SparkPIDController bottomShooterPID, topShooterPID, f;
@@ -72,15 +72,32 @@ public class ShooterSubsytem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    // This method will be called once per scheduler 
+    double p = SmartDashboard.getNumber("P Gain", 0);
+    double d = SmartDashboard.getNumber("D Gain", 0);
+    double ff = SmartDashboard.getNumber("Feed Forward", 0);
+    double vel = SmartDashboard.getNumber("Velocity", 0);
+    
+    if((p != kP)) { topShooterPID.setP(p); bottomShooterPID.setP(p); 
+      kP = p; }
+    if((d != kD)) { topShooterPID.setD(d); bottomShooterPID.setD(d);
+       kD = d; }
+    if((ff != kFF)) { topShooterPID.setFF(ff); bottomShooterPID.setFF(ff); 
+      kFF = ff; }
+    if((vel != velocityRPM)) { velocityRPM = vel; }
   }
 
   public void feedmotorpower(double power) {
-    
+    Feed.set(power);
   }
 
-  public void set(double speed) {
-    
+  public void setShooterVelocity() {
+    topShooterPID.setReference(velocityRPM, CANSparkMax.ControlType.kVelocity);
+    bottomShooterPID.setReference(-velocityRPM, CANSparkMax.ControlType.kVelocity);
+
+    SmartDashboard.putNumber("Target", velocityRPM);
+    SmartDashboard.putNumber("Actual Top", shooterTopEncoder.getVelocity());
+    SmartDashboard.putNumber("Actual Bottom", shooterBottomEncoder.getVelocity());
   }
 
   
