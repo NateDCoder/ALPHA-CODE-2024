@@ -16,10 +16,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Commands.VisionPose;
 import frc.robot.Subsystems.Camera;
+import frc.robot.Subsystems.Shooter;
 import frc.robot.generated.TunerConstants;
 
 public class RobotContainer {
   private double MaxSpeed = 6; // 6 meters per second desired top speed
+
   // Replace all instances of Nathan Speed with MaxSpeed for production code
   private double NathanSpeed = 2; // Made slower for testing replace for drivers
   private double MaxAngularRate = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
@@ -28,12 +30,12 @@ public class RobotContainer {
   private final CommandXboxController joystick = new CommandXboxController(0); // My joystick
   private final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
   private final Camera m_camera;
+  public Shooter m_shooter;
 
   // Field centric drive
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-      .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
-      .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
-                                                               // driving in open loop
+    .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+    .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric driving in open loop
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
   private final Telemetry logger = new Telemetry(MaxSpeed);
@@ -43,14 +45,23 @@ public class RobotContainer {
 
   private void configureBindings() {
     drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
-        drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * NathanSpeed) // Drive forward with
-                                                                                           // negative Y (forward)
-            .withVelocityY(-joystick.getLeftX() * NathanSpeed) // Drive left with negative X (left)
-            .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-        ));
-    joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-    joystick.b().whileTrue(drivetrain
-        .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
+      drivetrain.applyRequest(() -> drive
+        .withVelocityX(-joystick.getLeftY() * NathanSpeed) // Drive forward with negative Y (forward)
+        .withVelocityY(-joystick.getLeftX() * NathanSpeed) // Drive left with negative X (left)
+        .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+      )
+    );
+
+    joystick.a().whileTrue(
+      drivetrain.applyRequest(() -> brake)
+    );
+
+    joystick.b().whileTrue(
+      drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX())))
+    );
+
+    joystick.rightTrigger(0.5).whileTrue(Commands.run(() -> m_shooter.setShooterVelocity()));
+    joystick.rightTrigger(0.5).whileFalse(Commands.run(() -> m_shooter.stopShooter()));
 
     // reset the field-centric heading on left bumper press
     joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
@@ -58,6 +69,7 @@ public class RobotContainer {
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
     }
+
     drivetrain.registerTelemetry(logger::telemeterize);
   }
 

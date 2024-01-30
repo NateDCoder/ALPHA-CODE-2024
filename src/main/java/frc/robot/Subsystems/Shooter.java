@@ -4,19 +4,17 @@
 
 package frc.robot.Subsystems;
 
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
-import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-public class ShooterSubsytem extends SubsystemBase {
+public class Shooter extends SubsystemBase {
 
   CANSparkMax pivot = new CANSparkMax(Constants.PIVOT_MOTOR_ID, MotorType.kBrushless);
   CANSparkFlex bottomShooter = new CANSparkFlex(Constants.BOTTOM_SHOOTER_MOTOR_ID, MotorType.kBrushless);
@@ -30,7 +28,7 @@ public class ShooterSubsytem extends SubsystemBase {
   //int     shooterAnglePID;
 
   /** Creates a new ShooterSubsytem. */
-  public ShooterSubsytem(int sparkChannel, int talonFXDeviceId, int shooterAnglePID) {
+  public Shooter(int sparkChannel, int talonFXDeviceId, int shooterAnglePID) {
     topShooterPID = topShooter.getPIDController();
     bottomShooterPID = bottomShooter.getPIDController();
 
@@ -100,6 +98,8 @@ public class ShooterSubsytem extends SubsystemBase {
     SmartDashboard.putNumber("Actual Bottom", shooterBottomEncoder.getVelocity());
   }
 
-  
-
+  public void stopShooter() {
+    topShooterPID.setReference(0, CANSparkMax.ControlType.kVelocity);
+    bottomShooterPID.setReference(0, CANSparkMax.ControlType.kVelocity);
+  }
 }
