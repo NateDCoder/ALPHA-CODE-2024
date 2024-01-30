@@ -1,6 +1,5 @@
 package frc.robot;
 
-import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.Utils;

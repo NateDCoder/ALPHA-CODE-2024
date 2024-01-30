@@ -4,8 +4,6 @@
 
 package frc.robot.Subsystems;
 
-import java.io.IOError;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +22,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Commands.VisionPose;
 // Handle the camera and vision pipeline 1/27/24 -Nathan
 public class Camera extends SubsystemBase {
   PhotonCamera camera;
